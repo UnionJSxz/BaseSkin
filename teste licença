@@ -1,14 +1,47 @@
-function moveMouse(x, y) {
-    var event = new MouseEvent('mousemove', {
-        view: window,
-        bubbles: true,
-        cancelable: true,
-        clientX: x,
-        clientY: y
-    });
-    
-    document.dispatchEvent(event);
-}
+const { Builder, By, Key, until } = require('selenium-webdriver');
+const firefox = require('selenium-webdriver/firefox');
 
-// Chamada de exemplo
-moveMouse(100, 100); // Move o ponteiro para (100, 100)
+// Configurações do navegador Firefox
+const options = new firefox.Options();
+options.addArguments('--headless'); // Execução sem interface gráfica
+
+// Inicializa o WebDriver
+(async function example() {
+    let driver = await new Builder()
+        .forBrowser('firefox')
+        .setFirefoxOptions(options)
+        .build();
+
+    try {
+        // Abre o site alvo
+        await driver.get('https://www.exemplo.com');
+
+        // Simula um clique em um ponto específico da página
+        await simulateClick(driver, 100, 100);
+
+        // Aguarda até que um elemento específico seja carregado
+        await driver.wait(until.elementLocated(By.id('elemento-carregado')), 10000);
+
+        // Realiza mais ações no site, se necessário
+
+        // Aguarda até que a página seja carregada completamente
+        await driver.wait(until.urlContains('pagina-final'), 10000);
+
+        // Captura a URL final
+        const finalUrl = await driver.getCurrentUrl();
+        console.log('URL Final:', finalUrl);
+    } finally {
+        // Fecha o navegador
+        await driver.quit();
+    }
+})();
+
+// Função para simular um clique em um ponto específico da página
+async function simulateClick(driver, x, y) {
+    await driver.executeScript((x, y) => {
+        const element = document.elementFromPoint(x, y);
+        if (element) {
+            element.click();
+        }
+    }, x, y);
+}
